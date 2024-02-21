@@ -1,0 +1,131 @@
+# App Registration Api
+
+variables:
+  - name: folderName
+    value: AzureFunctionSample
+  - name: functionAppBaseName
+    value: function-app-name-ENV
+  - group: azure-environments
+  - group: auth_client
+
+trigger:
+  batch: false
+  branches:
+    include:
+      - develop
+      - main
+  paths:
+    include:
+      - AzureFunctionSample*
+
+resources:
+  pipelines:
+    - pipeline: terraformintegrations
+      source: terraform-integrations
+      trigger:
+        branches:
+          include:
+            - develop
+            - main
+  repositories:
+    - repository: templates
+      type: git
+      name: MyApp/MyRepo
+
+stages:
+  - stage: Build
+    jobs:
+      - template: ../../build-pipeline-templates/templates/npm-audit.yml
+        parameters:
+          folderName: $(folderName)
+      - template: ../../pipeline-templates/function-app-build-and-zip.yml
+        parameters:
+          folderName: $(folderName)
+  - stage: Deploy_QA
+    dependsOn: Build
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),  eq(variables['Build.Reason'], 'Manual')))
+    jobs:
+      - job: DeployFunction
+        steps:
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              artifactName: drop
+          - task: AzureFunctionApp@1
+            inputs:
+              azureSubscription: $(qaAzureSubscription)
+              resourceGroupName: $(qaIntFuncResourceGroup)
+              appType: functionApp
+              deploymentMethod: zipDeploy
+              appName: $(functionAppBaseName)-qa001
+              package: $(System.ArtifactsDirectory)/**/$(Build.BuildId).zip
+              appSettings: >
+                -MSAUTH_CLIENTID $(QA001_MSAUTH_CLIENTID)
+                -MSAUTH_SECRET $(QA001_MSAUTH_SECRET)
+                -MSAUTH_URL $(QA001_MSAUTH_URL)
+                -MSAUTH_SCOPE $(QA001_MSAUTH_SCOPE)
+                -AUTHPROXY_URL $(QA001_AUTHPROXY_URL)
+                -APIDATA_SQL_SERVER_URL $(QA001_APIDATA_SQL_SERVER_URL)
+                -APIDATA_SQL_SERVER_DATABASE $(QA001_APIDATA_SQL_SERVER_DATABASE)
+                -APIDATA_SQL_USERNAME $(QA001_APIDATA_SQL_USERNAME)
+                -APIDATA_SQL_PASSWORD $(QA001_APIDATA_SQL_PASSWORD)
+                -AUTH0_BASE_URL $(QA001_AUTH0_BASE_URL)
+
+  - stage: Deploy_UAT
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),  eq(variables['Build.Reason'], 'Manual')))
+    dependsOn: Deploy_QA
+    jobs:
+      - job: DeployFunction
+        steps:
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              artifactName: drop
+          - task: AzureFunctionApp@1
+            inputs:
+              azureSubscription: $(prodAzureSubscription)
+              resourceGroupName: $(uatIntFuncResourceGroup)
+              appType: functionApp
+              deploymentMethod: runFromPackage
+              appName: $(functionAppBaseName)-uat
+              package: $(System.ArtifactsDirectory)/**/$(Build.BuildId).zip
+              appSettings: >
+                -MSAUTH_CLIENTID $(UAT_MSAUTH_CLIENTID)
+                -MSAUTH_SECRET $(UAT_MSAUTH_SECRET)
+                -MSAUTH_URL $(UAT_MSAUTH_URL)
+                -MSAUTH_SCOPE $(UAT_MSAUTH_SCOPE)
+                -AUTHPROXY_URL $(UAT_AUTHPROXY_URL)
+                -APIDATA_SQL_SERVER_URL $(UAT_APIDATA_SQL_SERVER_URL)
+                -APIDATA_SQL_SERVER_DATABASE $(UAT_APIDATA_SQL_SERVER_DATABASE)
+                -APIDATA_SQL_USERNAME $(UAT_APIDATA_SQL_USERNAME)
+                -APIDATA_SQL_PASSWORD $(UAT_APIDATA_SQL_PASSWORD)
+                -AUTH0_BASE_URL $(UAT_AUTH0_BASE_URL)
+
+  - stage: Deploy_PROD
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),  eq(variables['Build.Reason'], 'Manual')))
+    dependsOn: Deploy_UAT
+    jobs:
+      - deployment: Prod
+        environment: Prod-Integrations-001
+      - job: DeployFunction
+        steps:
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              artifactName: drop
+          - task: AzureFunctionApp@1
+            inputs:
+              azureSubscription: $(prodAzureSubscription)
+              resourceGroupName: $(prodIntFuncResourceGroup)
+              appType: functionApp
+              deploymentMethod: runFromPackage
+              appName: $(functionAppBaseName)-prod
+              package: $(System.ArtifactsDirectory)/**/$(Build.BuildId).zip
+              appSettings: >
+                -MSAUTH_CLIENTID $(PROD_MSAUTH_CLIENTID)
+                -MSAUTH_SECRET $(PROD_MSAUTH_SECRET)
+                -MSAUTH_URL $(PROD_MSAUTH_URL)
+                -MSAUTH_SCOPE $(PROD_MSAUTH_SCOPE)
+                -AUTHPROXY_URL $(PROD_AUTHPROXY_URL)
+                -APIDATA_SQL_SERVER_URL $(PROD_APIDATA_SQL_SERVER_URL)
+                -APIDATA_SQL_SERVER_DATABASE $(PROD_APIDATA_SQL_SERVER_DATABASE)
+                -APIDATA_SQL_USERNAME $(PROD_APIDATA_SQL_USERNAME)
+                -APIDATA_SQL_PASSWORD $(PROD_APIDATA_SQL_PASSWORD)
+                -AUTH0_BASE_URL $(PROD_AUTH0_BASE_URL)
