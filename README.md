@@ -1,6 +1,6 @@
 <h1>Api Registration with Auth0,Azure functions and SQL</h1>
 
-Here is an overview of a recent project I led, that evolved the re-design and implementation of the API registration process, where customers would be allowed to retrieve specific sets of data from an API.
+Here is an overview of a recent project I led, that involved the re-design and implementation of the API registration process, where customers would be allowed to retrieve specific sets of data from an API.
 
 The API endpoint was provided by Azure functions, whose main purposes were to authenticate the user and call SQL store procedures.
 
