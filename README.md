@@ -1,6 +1,6 @@
-<h1>Api Registration with Auth0,Azure functions and SQL</h1>
+<h1>Api Registration with Auth0, Azure functions and SQL</h1>
 
-Here is an overview of a recent project I led, that involved the re-design and implementation of the API registration process, where customers would be allowed to retrieve specific sets of data from an API.
+Here is an overview of a recent project I led, which involved the redesign and implementation of the API registration process, where customers would be allowed to retrieve specific sets of data from an API.
 
 The API endpoint was provided by Azure functions, whose main purposes were to authenticate the user and call SQL store procedures.
 
@@ -8,7 +8,7 @@ Upon execution, the store procedure would then provide data for the user.
 
 ## App Registration Tool 🚀
 
-App Registration is an automation service that enables authorized users to seamlessly manage API registrations. With App Registration, you can effortlessly create, edit, and remove API registrations, each containing essential authentication details and tailored configurations for your API calls.
+App Registration is an automation service that enables authorized users to manage API registrations seamlessly. With App Registration, you can effortlessly create, edit, and remove API registrations, each containing essential authentication details and tailored configurations for your API calls.
 
 Users who belong to the customer administrator group and possess the 'AddEditAppRegistration' privileges can access an API App Registration page within LAMP.
 
@@ -24,14 +24,14 @@ Upon successful generation of the API credentials, the user is prompted to copy 
 
 ## Azure Functions API ⚡
 
-Azure Functions APIs offer a robust and versatile set of services to meet various client needs. Among these, are:
+Azure Functions APIs offer a robust and versatile set of services to meet various client needs. Among these are:
 
 - Vendors API [GET]
 - Fields API [GET]
 - Asset Request API [GET]
 - Data Feed API [POST]
 
-The Vendors API facilitates access to vendor information, while the Fields API offers a comprehensive list of fields, they are both static data sets. The Asset Request API streamlines asset management by providing a list of assets, that can vary from customer to customer, and the Data Feed API empowers users to seamlessly create their own API end point by posting data to specific database. These Azure Functions APIs collectively provide a powerful toolkit for developers and clients to interact with and leverage data and services in a dynamic and efficient manner.
+The Vendors API facilitates access to vendor information, while the Fields API offers a comprehensive list of fields; they are both static data sets. The Asset Request API streamlines asset management by providing a list of assets, which can vary from customer to customer, and the Data Feed API empowers users to seamlessly create their own API endpoint by posting data to a specific database. These Azure Functions APIs collectively provide a powerful toolkit for developers and clients to interact with and leverage data and services in a dynamic and efficient manner.
 
 Below is a diagram that aids in illustrating the flow of the service.
 
@@ -41,9 +41,9 @@ Below is a diagram that aids in illustrating the flow of the service.
 
 The authentication token comes from Auth0. I am leveraging the current login process that authenticates the user.
 
-The API configuration in Auth0 is simple. I have created a Machine-to-Machine application that generates other applications' APIs, with specific rights. Auth0 then will assign a client ID and client secret that is later passed into the bearer token. Each application operates independently, and customers can have as many applications with different API configurations as they wish.
+The API configuration in Auth0 is simple. I have created a Machine-to-Machine application that generates other applications' APIs, with specific rights. Auth0 will then assign a client ID and client secret that is later passed into the bearer token. Each application operates independently, and customers can have as many applications with different API configurations as they wish.
 
-In Auth0 I can configure the token specifications, like size and expiration, and increase the level of security and permission given to a single application API.
+In Auth0, I can configure the token specifications, like size and expiration, and increase the level of security and permission given to a single application API.
 
 ### How to request a bearer token from Auth0 🪙
 
@@ -59,14 +59,14 @@ curl --location 'https://{AUTH0_COMPANY_DOMAIN}.us.auth0.com/oauth/token' \
 <br/>
 
 - Notice that this cURL command is composed of the `client_id`, `client_secret`, and `audience`; they are derived from an active application inside of `Auth0>Applications`.
-  - `client_id`: Refers to the Machine To Machine Client ID
-  - `client_secret`: Refers to the Machine To Machine Client Secret
+  - `client_id`: Refers to the Machine-to-Machine Client ID
+  - `client_secret`: Refers to the Machine-to-Machine Client Secret
   - `audience`: Refers to the API Identifier for the authorized API.
     - This value can be found under `Applications/YourTargetApplication/APIs`
 
 <div style="border-left: 2px solid #5bc0de; background:#e3edf2; padding: 0.8rem;" >
 <span >
-💡 <b>Attention</b>: Please, ensure that those values are replaced to target your API information. 
+💡 <b>Attention</b>: Please, ensure that those values are replaced with your API information. 
 </span>
 
 <br />
@@ -74,7 +74,7 @@ curl --location 'https://{AUTH0_COMPANY_DOMAIN}.us.auth0.com/oauth/token' \
 
 <br />
 
-- Finally, a new tab will appear containing your POST request information, submit the request to get your token.
+- Finally, a new tab will appear containing your POST request information. Submit the request to get your token.
 
 **Token Example:**
 
@@ -88,7 +88,7 @@ curl --location 'https://{AUTH0_COMPANY_DOMAIN}.us.auth0.com/oauth/token' \
 
 ## How to get data from the Azure Functions ⛈️
 
-Once again, we use postman to hit the API, passing the authorization token to retrive the data.
+Once again, we use Postman to hit the API, passing the authorization token to retrieve the data.
 
 Here is how to use Postman to get data from the Vendors API:
 
